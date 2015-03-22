@@ -6,6 +6,7 @@
 #define redpin 9
 #define greenpin 10
 #define bluepin 11
+#define irpin 14
 // for a common anode LED, connect the common pin to +5V
 // for common cathode, connect the common to ground
 
@@ -14,7 +15,7 @@
 
 // our RGB -> eye-recognized gamma color
 byte gammatable[256];
-int oldRed, oldGreen, oldBlue;
+int irValue;
 int outColor; //1 is red, 2 is green, 3 is blue, 4 is white
 
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
@@ -34,6 +35,7 @@ void setup() {
   pinMode(redpin, OUTPUT);
   pinMode(greenpin, OUTPUT);
   pinMode(bluepin, OUTPUT);
+  pinMode(irpin, OUTPUT);
   // thanks PhilB for this gamma table!
   // it helps convert RGB colors to what humans see
   for (int i = 0; i < 256; i++) {
@@ -67,6 +69,11 @@ void loop() {
   //Serial.print("\tG:\t"); Serial.print(green);
   //Serial.print("\tB:\t"); Serial.print(blue);
   // Figure out some basic hex code for visualization
+  
+  irValue = analogRead(irpin);
+  
+  Serial.println(irValue);
+  
   uint32_t sum = clear;
   float r, g, b;
   r = red; r /= sum;
@@ -109,10 +116,10 @@ void loop() {
   }
   */
   else if (outColor == 0) {
-    Serial.println("BLACK");
-    analogWrite(redpin, 0);
-    analogWrite(greenpin, 0);
-    analogWrite(bluepin, 0);
+    Serial.println("WHITE");
+    analogWrite(redpin, 1023);
+    analogWrite(greenpin, 1023);
+    analogWrite(bluepin, 1023);
     outColor = -1;
   }
 }

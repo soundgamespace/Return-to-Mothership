@@ -2,13 +2,16 @@
 
 #define redpin 9
 #define greenpin 10
-#define bluePin 11
+#define bluein 11
+#define irpin 12
 
 void setup() {
   // set ledpins to output
   pinMode(redpin, OUTPUT);
   pinMode(bluepin, OUTPUT);
   pinMode(greenpin, OUTPUT);
+    pinMode(irpin, OUTPUT);
+    digitalWrite(irPin, HIGH);
 }
 
 void loop() {
