@@ -3,9 +3,11 @@
 
 // Pick analog outputs, for the UNO these three work well
 // use ~560  ohm resistor between Red & Blue, ~1K for green (its brighter)
-#define redpin 10
-#define greenpin 11
-#define bluepin 12
+
+int redPins[] = {4, 7, 10};
+int greenPins[] = {5, 8, 11};
+int bluePins[] = {6, 9, 12};
+
 #define irpin 14
 // for a common anode LED, connect the common pin to +5V
 // for common cathode, connect the common to ground
@@ -21,21 +23,22 @@ int outColor; //1 is red, 2 is green, 3 is blue, 4 is white
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 void setup() {
-  Serial.begin(9600);
-  Serial.println("Color View Test!");
 
+  Serial.begin(9600);
+  Serial.println("Sonic-Hammer Test!");
   if (tcs.begin()) {
     Serial.println("Found sensor");
   } else {
     Serial.println("No TCS34725 found ... check your connections");
     while (1); // halt!
   }
-
   // use these three pins to drive an LED
-  pinMode(redpin, OUTPUT);
-  pinMode(greenpin, OUTPUT);
-  pinMode(bluepin, OUTPUT);
-  pinMode(irpin, OUTPUT);
+  for (int i = 0; i < 3; i++) {
+    pinMode(redPins[i], OUTPUT);
+    pinMode(greenPins[i], OUTPUT);
+    pinMode(bluePins[i], OUTPUT);
+  }
+  //pinMode(irpin, OUTPUT);
   // thanks PhilB for this gamma table!
   // it helps convert RGB colors to what humans see
   for (int i = 0; i < 256; i++) {
@@ -43,13 +46,11 @@ void setup() {
     x /= 255;
     x = pow(x, 2.5);
     x *= 255;
-
     if (commonAnode) {
       gammatable[i] = 255 - x;
     } else {
       gammatable[i] = x;
     }
-    //Serial.println(gammatable[i]);
   }
 }
 
@@ -69,11 +70,10 @@ void loop() {
   //Serial.print("\tG:\t"); Serial.print(green);
   //Serial.print("\tB:\t"); Serial.print(blue);
   // Figure out some basic hex code for visualization
-  
   irValue = analogRead(irpin);
-  
+
   //Serial.println(irValue);
-  
+
   uint32_t sum = clear;
   float r, g, b;
   r = red; r /= sum;
@@ -83,43 +83,42 @@ void loop() {
   //Serial.print("\t");
   //Serial.print((int)r, HEX); Serial.print((int)g, HEX); Serial.print((int)b, HEX);
   //Serial.println();
-
   //Serial.print((int)r ); Serial.print(" "); Serial.print((int)g);Serial.print(" ");  Serial.println((int)b );
   if (r > 50 && outColor != 1 && r > b + g) {
     Serial.println("RED");
-    analogWrite(redpin, 1023);
-    analogWrite(greenpin, 0);
-    analogWrite(bluepin, 0);
+    for (int i = 0; i < 3; i++) {
+      digitalWrite(redPins[i], HIGH);
+      digitalWrite(greenPins[i], 0);
+      digitalWrite(bluePins[i], 0);
+    }
     outColor = 1;
   }
   else if (g > 50 && outColor != 2 && g > r + b) {
+    for (int i = 0; i < 3; i++) {
     Serial.println("GREEN");
-    analogWrite(redpin, 0);
-    analogWrite(greenpin, 1023);
-    analogWrite(bluepin, 0);
+      digitalWrite(redPins[i], LOW);
+      digitalWrite(greenPins[i], HIGH);
+      digitalWrite(bluePins[i], LOW);\   
+    }
     outColor = 2;
   }
   else if (b > 50 && outColor != 3 && b > r + g) {
+    for (int i = 0; i < 3; i++) {
     Serial.println("BLUE");
-    analogWrite(redpin, 0);
-    analogWrite(greenpin, 0);
-    analogWrite(bluepin, 1023);
+      digitalWrite(redPins[i], LOW);
+      digitalWrite(greenPins[i], LOW);
+      digitalWrite(bluePins[i], HIGH);
+
+    }
     outColor = 3;
   }
-  /*
-  else if (blue > 16000 && red > 16000 && green > 16000 && outColor != 4) {
-    Serial.println("WHITE");
-    analogWrite(redpin, 0);
-    analogWrite(greenpin, 0);
-    analogWrite(bluepin, 1023);
-    outColor = 4;
-  }
-  */
   else if (outColor == 0) {
     Serial.println("WHITE");
-    analogWrite(redpin, 1023);
-    analogWrite(greenpin, 1023);
-    analogWrite(bluepin, 1023);
+    for (int i = 0; i < 3; i++) {
+    analogWrite(redPins[i], HIGH);
+      analogWrite(greenPins[i], HIGH);
+      analogWrite(bluePins[i], HIGH);
+    }
     outColor = -1;
   }
 }
