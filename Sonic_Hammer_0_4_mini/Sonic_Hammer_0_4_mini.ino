@@ -60,8 +60,25 @@ void setup() {
       gammatable[i] = x;
     }
   }
+  speakerTest();
 }
 
+void speakerTest() {
+  for (int i = 200; i > 70; i = i - 5) {
+    startPlayback(blueSample, sizeof(blueSample));
+    delay(i);
+    startPlayback(greenSample, sizeof(greenSample));
+    delay(i);
+    startPlayback(redSample, sizeof(redSample));
+    delay(i);
+  }
+  startPlayback(redSample, sizeof(redSample));
+  delay(800);
+  startPlayback(greenSample, sizeof(greenSample));
+  delay(1000);
+  startPlayback(blueSample, sizeof(blueSample));
+  delay(1000);
+}
 //sloppy main loop but it does the job
 void loop() {
   uint16_t clear, red, green, blue;
@@ -79,7 +96,7 @@ void loop() {
   Serial.print("\t");
   Serial.print((int)r, HEX); Serial.print((int)g, HEX); Serial.print((int)b, HEX);
   Serial.println();
-  Serial.print((int)r ); Serial.print(" "); Serial.print((int)g);Serial.print(" ");  Serial.println((int)b );
+  Serial.print((int)r ); Serial.print(" "); Serial.print((int)g); Serial.print(" ");  Serial.println((int)b );
   if (r > 140 && outColor != 1 && r > b + g) {
     Serial.println("RED");
     for (int i = 0; i < 3; i++) {
@@ -90,7 +107,7 @@ void loop() {
     startPlayback(redSample, sizeof(redSample));
     outColor = 1;
     //debouncing in a way
-    delay(800);
+    delay(2200);
   }
   else if (g > 140 && outColor != 2 && g > r + b) {
     for (int i = 0; i < 3; i++) {
@@ -103,7 +120,7 @@ void loop() {
     outColor = 2;
 
     //debouncing in a way
-    delay(800);
+    delay(2200);
   }
   else if (b > 140 && outColor != 3 && b > r + g) {
     for (int i = 0; i < 3; i++) {
@@ -116,7 +133,7 @@ void loop() {
     outColor = 3;
 
     //debouncing in a way
-    delay(800);
+    delay(2200);
   }
   else if (outColor == 0) {
     Serial.println("WHITE");
@@ -126,9 +143,6 @@ void loop() {
       analogWrite(bluePins[i], HIGH);
     }
     outColor = -1;
-    startPlayback(blueSample, sizeof(blueSample));
-    startPlayback(greenSample, sizeof(greenSample));
-     startPlayback(redSample, sizeof(redSample));
   }
 }
 
