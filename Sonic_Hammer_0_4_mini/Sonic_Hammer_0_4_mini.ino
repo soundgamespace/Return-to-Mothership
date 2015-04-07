@@ -34,17 +34,18 @@ void setup() {
 
   Serial.begin(9600);
   Serial.println("Sonic-Hammer Test!");
-  if (tcs.begin()) {
-    Serial.println("Found sensor");
-  } else {
-    Serial.println("No TCS34725 found ... check your connections");
-    while (1); // halt!
-  }
+  
   // use these three pins to drive an LED
   for (int i = 0; i < 3; i++) {
     pinMode(redPins[i], OUTPUT);
     pinMode(greenPins[i], OUTPUT);
     pinMode(bluePins[i], OUTPUT);
+  }
+  if (tcs.begin()) {
+    Serial.println("Found sensor");
+  } else {
+    Serial.println("No TCS34725 found ... check your connections");
+    while (1); // halt!
   }
   //pinMode(irpin, OUTPUT);
   // thanks PhilB for this gamma table!
@@ -62,7 +63,27 @@ void setup() {
   }
   speakerTest();
 }
-
+void setBlue() {
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(redPins[i], HIGH);
+    digitalWrite(greenPins[i], HIGH);
+    digitalWrite(bluePins[i], LOW);
+  }
+}
+void setRed() {
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(redPins[i], LOW);
+    digitalWrite(greenPins[i], HIGH);
+    digitalWrite(bluePins[i], HIGH);
+  }
+}
+void setGreen() {
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(redPins[i], HIGH);
+    digitalWrite(greenPins[i], LOW);
+    digitalWrite(bluePins[i], HIGH);
+  }
+}
 void speakerTest() {
   for (int i = 200; i > 70; i = i - 5) {
     startPlayback(blueSample, sizeof(blueSample));
@@ -73,14 +94,18 @@ void speakerTest() {
     delay(i);
   }
   startPlayback(redSample, sizeof(redSample));
+  setRed();
   delay(800);
   startPlayback(greenSample, sizeof(greenSample));
+  setGreen();
   delay(1000);
   startPlayback(blueSample, sizeof(blueSample));
+  setBlue();
   delay(1000);
 }
 //sloppy main loop but it does the job
 void loop() {
+  /*
   uint16_t clear, red, green, blue;
   tcs.setInterrupt(false);// turn on LED
   delay(60);  // takes 50ms to read
@@ -144,5 +169,6 @@ void loop() {
     }
     outColor = -1;
   }
+  */
 }
 
