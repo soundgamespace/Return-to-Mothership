@@ -36,9 +36,10 @@ void setup() {
   Serial.println("Sonic-Hammer Test!");
   if (tcs.begin()) {
     Serial.println("Found sensor");
-  } else {
+  } 
+  else {
     Serial.println("No TCS34725 found ... check your connections");
-    while (1); // halt!
+    //while (1); // halt!
   }
   // use these three pins to drive an LED
   for (int i = 0; i < 3; i++) {

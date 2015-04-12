@@ -105,7 +105,7 @@ void speakerTest() {
 }
 //sloppy main loop but it does the job
 void loop() {
-  /*
+  
   uint16_t clear, red, green, blue;
   tcs.setInterrupt(false);// turn on LED
   delay(60);  // takes 50ms to read
@@ -169,6 +169,6 @@ void loop() {
     }
     outColor = -1;
   }
-  */
+  
 }
 
