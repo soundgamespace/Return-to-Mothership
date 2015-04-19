@@ -7,12 +7,12 @@ int redLeds[] = {2, 3, 4, 5};
 int greenLeds[] = {6, 7, 8, 9};
 int blueLeds[] = {10, 11, 12, 13};
 
-boolean redStates[] = {0, 1, 0, 1};
-boolean greenStates[] = {0, 1, 0, 1};
-boolean blueStates[] = {0, 1, 0, 1};
+boolean redStates[] = {1, 1, 0, 0};
+boolean greenStates[] = {1, 1, 0, 0};
+boolean blueStates[] = {1, 1, 0, 0};
 
 unsigned long time;
-unsigned long interval = 500;
+unsigned long interval = 250;
 
 byte colorMode = 2;
 byte gammatable[256];
@@ -145,14 +145,13 @@ void meteorPulse(byte _colorMode) {
 void loop() {
   time = millis();
   while (1) {
-    readColors();
+    //readColors();
     if (time + interval < millis()) {
       int num = random(0, 11);
       if (num == 7) {
-        colorMode = random(0, 4);
+        colorMode = (colorMode + 1)%4;
       } 
       meteorPulse(colorMode);
-      //delay(40);
       time = millis();
     }
 
