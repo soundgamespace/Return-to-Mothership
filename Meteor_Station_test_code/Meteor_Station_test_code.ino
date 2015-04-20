@@ -3,9 +3,9 @@
 #include <Wire.h>
 #include "Adafruit_TCS34725.h"
 
-int redLeds[] = {2, 3, 4, 5};
-int greenLeds[] = {6, 7, 8, 9};
-int blueLeds[] = {10, 11, 12, 13};
+int greenLeds[] = {2, 3, 4, 5};
+int blueLeds[] = {6, 7, 8, 9};
+int redLeds[] = {10, 11, 12, 13};
 
 boolean redStates[] = {1, 1, 0, 0};
 boolean greenStates[] = {1, 1, 0, 0};
@@ -14,7 +14,7 @@ boolean blueStates[] = {1, 1, 0, 0};
 unsigned long time;
 unsigned long interval = 250;
 
-byte colorMode = 2;
+byte colorMode = 0;
 byte gammatable[256];
 
 // set to false if using a common cathode LED
@@ -28,13 +28,7 @@ void setup() {
   //forward message to triggerEvent function.
   Wire.onReceive(triggerEvent);
   //set our outputs
-  delay(250);
-  if (tcs.begin()) {
-    Serial.println("Found sensor");
-  } else {
-    Serial.println("No TCS34725 found ... check your connections");
-  }
-  for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
     pinMode(redLeds[i], OUTPUT);
     pinMode(greenLeds[i], OUTPUT);
     pinMode(blueLeds[i], OUTPUT);
@@ -42,6 +36,16 @@ void setup() {
     digitalWrite(greenLeds[i], HIGH);
     digitalWrite(blueLeds[i], HIGH);
   }
+  delay(120);
+  if (tcs.begin()) {
+    Serial.println("Found sensor");
+    flashWhite();
+     delay(500);
+  }
+  else {
+    Serial.println("No TCS34725 found ... check your connections");
+  }
+
   // thanks PhilB for this gamma table!
   // it helps convert RGB colors to what humans see
   for (int i = 0; i < 256; i++) {
@@ -55,6 +59,9 @@ void setup() {
       gammatable[i] = x;
     }
   }
+  delay(1000);
+  flashWhite();
+  flashWhite();
 }
 
 void readColors() {
@@ -64,30 +71,31 @@ void readColors() {
   tcs.getRawData(&red, &green, &blue, &clear);
   tcs.setInterrupt(false);  // turn off LED
   uint32_t sum = clear;
-  float r, g, b;
-  r = red; r /= sum;
-  g = green; g /= sum;
-  b = blue; b /= sum;
-  r *= 256; g *= 256; b *= 256;
-  //Serial.print("\t");
-  //Serial.print((int)r, HEX); Serial.print((int)g, HEX); Serial.print((int)b, HEX);
-  Serial.println();
-  Serial.print((int)r ); Serial.print(" "); Serial.print((int)g); Serial.print(" ");  Serial.println((int)b );
+  Serial.print(red ); Serial.print(" "); Serial.print(green); Serial.print(" ");  Serial.println(blue );
 
-  if (r > 140 && colorMode == 1 && r > b + g) {
+  if (red > 110 && colorMode == 1 && red > blue + green) {
     //if red is detected
     Serial.println("RED DETECTED");
     colorMode = 0;
+    flashWhite();
+    flashWhite();
+    delay(3000);
   }
-  else if (g > 140 && colorMode == 1 && g > b + r) {
+  else if (green > 110 && colorMode == 2 && green > blue + red) {
     //if green is detected
     Serial.println("GREEN DETECTED");
     colorMode = 0;
+    flashWhite();
+    flashWhite();
+    delay(3000);
   }
-  else if (b > 140 && colorMode == 1 && b > r + g) {
+  else if (blue > 110 && colorMode == 3 && blue > red + green) {
     //if blue is detected
     Serial.println("BLUE DETECTED");
     colorMode = 0;
+    flashWhite();
+    flashWhite();
+    delay(3000);
   }
 }
 
@@ -106,6 +114,7 @@ void meteorPulse(byte _colorMode) {
   Serial.println(_colorMode);
   if (_colorMode == 0) {
     for (int i = 0; i < 4; i++) {
+
       digitalWrite(redLeds[i], HIGH);
       digitalWrite(greenLeds[i], HIGH);
       digitalWrite(blueLeds[i], HIGH);
@@ -142,17 +151,55 @@ void meteorPulse(byte _colorMode) {
   }
 }
 
+void flashWhite() {
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(redLeds[i], LOW);
+    digitalWrite(greenLeds[i], LOW);
+    digitalWrite(blueLeds[i], LOW);
+
+  }
+  delay(100);
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(redLeds[i], HIGH);
+    digitalWrite(greenLeds[i], HIGH);
+    digitalWrite(blueLeds[i], HIGH);
+
+  }
+  delay(100);
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(redLeds[i], LOW);
+    digitalWrite(greenLeds[i], LOW);
+    digitalWrite(blueLeds[i], LOW);
+
+  }
+  delay(100);
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(redLeds[i], HIGH);
+    digitalWrite(greenLeds[i], HIGH);
+    digitalWrite(blueLeds[i], HIGH);
+
+  }
+}
+
+int counter = 0;
+
+
 void loop() {
   time = millis();
   while (1) {
-    //readColors();
+    readColors();
     if (time + interval < millis()) {
-      int num = random(0, 11);
-      if (num == 7) {
-        colorMode = (colorMode + 1)%4;
-      } 
+      //int num = random(0, 11);
       meteorPulse(colorMode);
       time = millis();
+      if (colorMode == 0) {
+          colorMode = random(1, 3);
+        }
+      if (counter == 59) {
+        
+        colorMode = (colorMode + 1) % 4;
+      }
+      counter = (counter + 1) % 60;
     }
 
   }
