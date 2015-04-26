@@ -6,6 +6,7 @@
 int redPins[] = {4, 7, 10};
 int greenPins[] = {5, 8, 13};
 int bluePins[] = {6, 9, 12};
+int ampPWR = 3;
 
 //arrays for the sample infomation
 const unsigned char redSample[] PROGMEM = {
@@ -26,7 +27,7 @@ const unsigned char blueSample[] PROGMEM = {
 // our RGB -> eye-recognized gamma color
 byte gammatable[256];
 int irValue;
-int outColor; //1 is red, 2 is green, 3 is blue, 4 is white
+int outColor = 1; //1 is red, 2 is green, 3 is blue, 4 is white
 
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
@@ -34,7 +35,9 @@ void setup() {
 
   Serial.begin(9600);
   Serial.println("Sonic-Hammer Test!");
-  
+
+  //set amp SDN pin to output
+  pinMode(ampPWR, OUTPUT);
   // use these three pins to drive an LED
   for (int i = 0; i < 3; i++) {
     pinMode(redPins[i], OUTPUT);
@@ -85,6 +88,8 @@ void setGreen() {
   }
 }
 void speakerTest() {
+  digitalWrite(ampPWR, HIGH);
+  delayMicroseconds(100);
   for (int i = 145; i > 65; i = i - 8) {
     startPlayback(blueSample, sizeof(blueSample));
     delay(i);
@@ -102,10 +107,11 @@ void speakerTest() {
   startPlayback(blueSample, sizeof(blueSample));
   setBlue();
   delay(1000);
+  digitalWrite(ampPWR, LOW);
 }
 //sloppy main loop but it does the job
 void loop() {
-  
+
   uint16_t clear, red, green, blue;
   tcs.setInterrupt(false);// turn on LED
   delay(60);  // takes 50ms to read
@@ -124,6 +130,7 @@ void loop() {
   //Serial.print((int)r ); Serial.print(" "); Serial.print((int)g); Serial.print(" ");  Serial.println((int)b );
   if (red > 140 && outColor != 1 && red > blue + green) {
     Serial.println("RED");
+    digitalWrite(ampPWR, HIGH);
     for (int i = 0; i < 3; i++) {
       digitalWrite(redPins[i], LOW);
       digitalWrite(greenPins[i], HIGH);
@@ -133,8 +140,10 @@ void loop() {
     outColor = 1;
     //debouncing in a way
     delay(2200);
+    digitalWrite(ampPWR, LOW);
   }
   else if (green > 140 && outColor != 2 && green > red + blue) {
+    digitalWrite(ampPWR, HIGH);
     for (int i = 0; i < 3; i++) {
       Serial.println("GREEN");
       digitalWrite(redPins[i], HIGH);
@@ -143,11 +152,12 @@ void loop() {
     }
     startPlayback(greenSample, sizeof(greenSample));
     outColor = 2;
-
     //debouncing in a way
     delay(2200);
+    digitalWrite(ampPWR, LOW);
   }
   else if (blue > 140 && outColor != 3 && blue > red + green) {
+    digitalWrite(ampPWR, HIGH);
     for (int i = 0; i < 3; i++) {
       Serial.println("BLUE");
       digitalWrite(redPins[i], HIGH);
@@ -156,19 +166,19 @@ void loop() {
     }
     startPlayback(blueSample, sizeof(blueSample));
     outColor = 3;
-
     //debouncing in a way
     delay(2200);
+    digitalWrite(ampPWR, LOW);
   }
   else if (outColor == 0) {
     Serial.println("WHITE");
     for (int i = 0; i < 3; i++) {
-      analogWrite(redPins[i], HIGH);
-      analogWrite(greenPins[i], HIGH);
-      analogWrite(bluePins[i], HIGH);
+      analogWrite(redPins[i], LOW);
+      analogWrite(greenPins[i], LOW);
+      analogWrite(bluePins[i], LOW);
     }
     outColor = -1;
   }
-  
+
 }
 
