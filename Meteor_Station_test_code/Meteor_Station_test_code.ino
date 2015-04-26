@@ -135,11 +135,6 @@ void meteorPulse(byte _colorMode) {
       greenStates[i] = !greenStates[i];
       digitalWrite(greenLeds[i], greenStates[i]);
     }
-    //Serial.print("Green States : ");
-    //Serial.print(greenStates[0]);
-    //Serial.print(greenStates[1]);
-    //Serial.print(greenStates[2]);
-    //Serial.print(greenStates[3]);
   }
   else if (_colorMode == 3) {
     for (int i = 0; i < 4; i++) {
@@ -183,8 +178,8 @@ void flashWhite() {
 
 int counter = 0;
 
-
-void loop() {
+void proof_of_concept()
+{
   time = millis();
   while (1) {
     readColors();
@@ -201,6 +196,10 @@ void loop() {
       }
       counter = (counter + 1) % 60;
     }
-
   }
+}
+
+
+void loop() {
+  proof_of_concept();
 }
