@@ -25,7 +25,7 @@ Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS3472
 
 void setup() {
   Serial.begin(9600);
-  
+
   for (int i = 0; i < 4; i++) {
     pinMode(redLeds[i], OUTPUT);
     pinMode(greenLeds[i], OUTPUT);
@@ -77,7 +77,7 @@ void readColors() {
     colorMode = 0;
     flashWhite();
     flashWhite();
-    delay(3000);
+    delay(300);
   }
   else if (green > 110 && colorMode == 2 && green > blue + red) {
     //if green is detected
@@ -85,7 +85,7 @@ void readColors() {
     colorMode = 0;
     flashWhite();
     flashWhite();
-    delay(3000);
+    delay(300);
   }
   else if (blue > 110 && colorMode == 3 && blue > red + green) {
     //if blue is detected
@@ -93,7 +93,7 @@ void readColors() {
     colorMode = 0;
     flashWhite();
     flashWhite();
-    delay(3000);
+    delay(300);
   }
 }
 /*
@@ -107,10 +107,10 @@ void triggerEvent(int port) {
   }
 }
 */
-void meteorPulse(byte _colorMode) {
+void meteorPulse() {
   //Serial.print("Color Mode : ");
   //Serial.println(_colorMode);
-  if (_colorMode == 0) {
+  if (colorMode == 0) {
     for (int i = 0; i < 4; i++) {
 
       digitalWrite(redLeds[i], HIGH);
@@ -118,7 +118,7 @@ void meteorPulse(byte _colorMode) {
       digitalWrite(blueLeds[i], HIGH);
     }
   }
-  else if (_colorMode == 1) {
+  else if (colorMode == 1) {
     for (int i = 0; i < 4; i++) {
       digitalWrite(greenLeds[i], HIGH);
       digitalWrite(blueLeds[i], HIGH);
@@ -126,7 +126,7 @@ void meteorPulse(byte _colorMode) {
       digitalWrite(redLeds[i], redStates[i]);
     }
   }
-  else if (_colorMode == 2) {
+  else if (colorMode == 2) {
     for (int i = 0; i < 4; i++) {
       digitalWrite(redLeds[i], HIGH);
       digitalWrite(blueLeds[i], HIGH);
@@ -134,7 +134,7 @@ void meteorPulse(byte _colorMode) {
       digitalWrite(greenLeds[i], greenStates[i]);
     }
   }
-  else if (_colorMode == 3) {
+  else if (colorMode == 3) {
     for (int i = 0; i < 4; i++) {
       digitalWrite(redLeds[i], HIGH);
       digitalWrite(greenLeds[i], HIGH);
@@ -173,7 +173,7 @@ void flashWhite() {
 
   }
 }
-
+/*
 void proof_of_concept()
 {
   time = millis();
@@ -194,35 +194,27 @@ void proof_of_concept()
     }
   }
 }
-
-void incomming(byte colorMode) {
-  while (colorMode > 0) {
+*/
+void incomming() {
+  while (colorMode != 0) {
     readColors();
     if (time + interval < millis()) {
-      meteorPulse(colorMode);
+      meteorPulse();
       time = millis();
     }
-
   }
 }
 
 void serialPoller() {
   while (Serial.available()) {
-    //Serial.println("First Loop");
     if (Serial.available()) {
-      //Serial.println("Second Loop");
-      while (!Serial.available()) {
-        //Serial.println("Waiting for Buffer");
-      }
-      if (Serial.read() == 1) {
-        //Serial.println("Last Loop");
-        colorMode = random(1, 3);
-        //Serial.println(colorMode);
-        incomming(colorMode);
-      }
+      colorMode = Serial.read();
+      //Serial.print(colorMode);
+      incomming();
     }
   }
 }
+
 
 void loop() {
   serialPoller();
