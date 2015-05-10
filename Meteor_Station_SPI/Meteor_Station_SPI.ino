@@ -14,6 +14,8 @@ boolean blueStates[] = {1, 1, 0, 0};
 unsigned long time;
 unsigned long interval = 175;
 
+static byte METEOR_NUM = 1;
+
 byte colorMode = 0;
 byte gammatable[256];
 
@@ -24,9 +26,7 @@ Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS3472
 void setup() {
 
   Serial.begin(9600);
-  Wire.begin(5);//slave address
-  Wire.onReceive(triggerEvent);
-  Wire.onRequest(callBack);
+  Wire.begin();//slave address
 
   for (int i = 0; i < 4; i++) {
     pinMode(redLeds[i], OUTPUT);
@@ -67,19 +67,6 @@ void setup() {
 //                          I2C Stuff
 ////////////////////////////////////////////////////////////////
 //
-void triggerEvent(int bytesReceived) {
-  if (Wire.available()) {
-    while (Wire.available()) {
-      if (bytesReceived == 1){
-      colorMode = Wire.read();
-      }
-    }
-  }
-}
-
-void callBack(){
- Wire.write(colorMode);
-}
 
 void readColors() {
   uint16_t clear, red, green, blue;
@@ -94,7 +81,6 @@ void readColors() {
     Serial.print(0xff);
     colorMode = 0;
     flashWhite();
-    flashWhite();
     delay(300);
   }
   else if (green > 110 && colorMode == 2 && green > blue + red) {
@@ -102,16 +88,20 @@ void readColors() {
     Serial.println(0xff);
     colorMode = 0;
     flashWhite();
+    delay(150);
     flashWhite();
-    delay(300);
+    delay(150);
   }
   else if (blue > 110 && colorMode == 3 && blue > red + green) {
     //if blue is detected
     Serial.println(0xff);
     colorMode = 0;
     flashWhite();
+    delay(100);
     flashWhite();
-    delay(300);
+    delay(100);
+    flashWhite();
+    delay(100);
   }
 }
 
@@ -198,18 +188,25 @@ void incomming() {
     }
   }
 }
+byte dataBytes[2];
 
 void serialPoller() {
   while (Serial.available()) {
     if (Serial.available()) {
-      colorMode = Serial.read();
-      //Serial.print(colorMode);
-      incomming();
+      while (!Serial.available()) {};
+      Serial.readBytes(dataBytes, 2);
+      //Serial.print(dataBytes[0]);
+      //Serial.print(":");
+      //Serial.println(dataBytes[1]);
+      if (dataBytes[0] == METEOR_NUM) {
+        colorMode = dataBytes[1];
+        incomming();
+      }
     }
   }
 }
 
 void loop() {
   serialPoller();
-  meteorPulse();
+  
 }
