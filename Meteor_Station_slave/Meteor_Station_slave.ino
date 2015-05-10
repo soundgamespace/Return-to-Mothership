@@ -1,5 +1,4 @@
-
-//code for meteor slave stations
+#include <Wire.h>
 #include "Adafruit_TCS34725.h"
 
 int greenLeds[] = {2, 3, 4, 5};
@@ -13,7 +12,7 @@ boolean greenStates[] = {1, 1, 0, 0};
 boolean blueStates[] = {1, 1, 0, 0};
 
 unsigned long time;
-unsigned long interval = 250;
+unsigned long interval = 175;
 
 byte colorMode = 0;
 byte gammatable[256];
@@ -23,7 +22,11 @@ byte gammatable[256];
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 void setup() {
+
   Serial.begin(9600);
+  Wire.begin(4);//slave address
+  Wire.onReceive(triggerEvent);
+  Wire.onRequest(callBack);
 
   for (int i = 0; i < 4; i++) {
     pinMode(redLeds[i], OUTPUT);
@@ -42,7 +45,6 @@ void setup() {
   else {
     //Serial.println("No TCS34725 found ... check your connections");
   }
-
   // thanks PhilB for this gamma table!
   // it helps convert RGB colors to what humans see
   for (int i = 0; i < 256; i++) {
@@ -56,10 +58,27 @@ void setup() {
       gammatable[i] = x;
     }
   }
-  
   delay(1000);
   flashWhite();
   flashWhite();
+}
+//
+////////////////////////////////////////////////////////////////
+//                          I2C Stuff
+////////////////////////////////////////////////////////////////
+//
+void triggerEvent(int bytesReceived) {
+  if (Wire.available()) {
+    while (Wire.available()) {
+      if (bytesReceived == 1){
+      colorMode = Wire.read();
+      }
+    }
+  }
+}
+
+void callBack(){
+ Wire.write(colorMode);
 }
 
 void readColors() {
@@ -69,7 +88,7 @@ void readColors() {
   tcs.getRawData(&red, &green, &blue, &clear);
   tcs.setInterrupt(false);  // turn off LED
   uint32_t sum = clear;
-  
+
   if (red > 110 && colorMode == 1 && red > blue + green) {
     //if red is detected
     Serial.print(0xff);
@@ -97,11 +116,9 @@ void readColors() {
 }
 
 void meteorPulse() {
-  //Serial.print("Color Mode : ");
-  //Serial.println(_colorMode);
+  //black
   if (colorMode == 0) {
     for (int i = 0; i < 4; i++) {
-
       digitalWrite(redLeds[i], HIGH);
       digitalWrite(greenLeds[i], HIGH);
       digitalWrite(blueLeds[i], HIGH);
@@ -109,25 +126,34 @@ void meteorPulse() {
   }
   else if (colorMode == 1) {
     for (int i = 0; i < 4; i++) {
+      redStates[i] = !redStates[i];
       digitalWrite(greenLeds[i], HIGH);
       digitalWrite(blueLeds[i], HIGH);
-      redStates[i] = !redStates[i];
       digitalWrite(redLeds[i], redStates[i]);
     }
   }
   else if (colorMode == 2) {
     for (int i = 0; i < 4; i++) {
+      greenStates[i] = !greenStates[i];
       digitalWrite(redLeds[i], HIGH);
       digitalWrite(blueLeds[i], HIGH);
-      greenStates[i] = !greenStates[i];
       digitalWrite(greenLeds[i], greenStates[i]);
     }
   }
   else if (colorMode == 3) {
     for (int i = 0; i < 4; i++) {
+      blueStates[i] = !blueStates[i];
       digitalWrite(redLeds[i], HIGH);
       digitalWrite(greenLeds[i], HIGH);
-      blueStates[i] = !blueStates[i];
+      digitalWrite(blueLeds[i], blueStates[i]);
+    }
+  }
+  //white
+  else if (colorMode == 4) {
+    for (int i = 0; i < 4; i++) {
+      blueStates[i] = 0;
+      digitalWrite(redLeds[i], LOW);
+      digitalWrite(greenLeds[i], LOW);
       digitalWrite(blueLeds[i], blueStates[i]);
     }
   }

@@ -128,7 +128,7 @@ void loop() {
   //Serial.print((int)r, HEX); Serial.print((int)g, HEX); Serial.print((int)b, HEX);
   //Serial.println();
   //Serial.print((int)r ); Serial.print(" "); Serial.print((int)g); Serial.print(" ");  Serial.println((int)b );
-  if (red > 140 && outColor != 1 && red > blue + green) {
+  if (red > 80 && outColor != 1 && red * 1.3 > blue + green) {
     Serial.println("RED");
     digitalWrite(ampPWR, HIGH);
     for (int i = 0; i < 3; i++) {
@@ -142,7 +142,7 @@ void loop() {
     delay(2200);
     digitalWrite(ampPWR, LOW);
   }
-  else if (green > 140 && outColor != 2 && green > red + blue) {
+  else if (green > 80 && outColor != 2 && green * 1.3 > red + blue) {
     digitalWrite(ampPWR, HIGH);
     for (int i = 0; i < 3; i++) {
       Serial.println("GREEN");
@@ -156,7 +156,7 @@ void loop() {
     delay(2200);
     digitalWrite(ampPWR, LOW);
   }
-  else if (blue > 140 && outColor != 3 && blue > red + green) {
+  else if (blue > 80 && outColor != 3 && blue * 1.3 > red + green) {
     digitalWrite(ampPWR, HIGH);
     for (int i = 0; i < 3; i++) {
       Serial.println("BLUE");
