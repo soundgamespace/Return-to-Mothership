@@ -14,7 +14,7 @@ boolean blueStates[] = {1, 1, 0, 0};
 unsigned long time;
 unsigned long interval = 175;
 
-static byte METEOR_NUM = 1;
+static byte METEOR_NUM = 8;
 
 byte colorMode = 0;
 byte gammatable[256];
@@ -201,6 +201,10 @@ void serialPoller() {
       if (dataBytes[0] == METEOR_NUM) {
         colorMode = dataBytes[1];
         incomming();
+      }
+      else{
+       Serial.print(dataBytes[0]);
+       Serial.print(dataBytes[1]); 
       }
     }
   }

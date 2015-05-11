@@ -1,6 +1,6 @@
-
 //code for meteor slave stations
 #include "Adafruit_TCS34725.h"
+#include <Wire.h>
 
 int greenLeds[] = {2, 3, 4, 5};
 int blueLeds[] = {6, 7, 8, 9};
@@ -19,12 +19,12 @@ byte colorMode = 0;
 byte gammatable[256];
 
 // set to false if using a common cathode LED
-#define commonAnode false
+#define commonAnode true
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 void setup() {
+  
   Serial.begin(9600);
-
   for (int i = 0; i < 4; i++) {
     pinMode(redLeds[i], OUTPUT);
     pinMode(greenLeds[i], OUTPUT);
@@ -42,7 +42,6 @@ void setup() {
   else {
     //Serial.println("No TCS34725 found ... check your connections");
   }
-
   // thanks PhilB for this gamma table!
   // it helps convert RGB colors to what humans see
   for (int i = 0; i < 256; i++) {
@@ -97,11 +96,9 @@ void readColors() {
 }
 
 void meteorPulse() {
-  //Serial.print("Color Mode : ");
-  //Serial.println(_colorMode);
+  
   if (colorMode == 0) {
     for (int i = 0; i < 4; i++) {
-
       digitalWrite(redLeds[i], HIGH);
       digitalWrite(greenLeds[i], HIGH);
       digitalWrite(blueLeds[i], HIGH);
@@ -128,6 +125,16 @@ void meteorPulse() {
       digitalWrite(redLeds[i], HIGH);
       digitalWrite(greenLeds[i], HIGH);
       blueStates[i] = !blueStates[i];
+      digitalWrite(blueLeds[i], blueStates[i]);
+    }
+  }
+  else if (colorMode == 4) {
+    for (int i = 0; i < 4; i++) {
+      redStates[i] = !redStates[i];
+      greenStates[i] = !greenStates[i];
+      blueStates[i] = !blueStates[i];
+      digitalWrite(redLeds[i], redStates[i]);
+      digitalWrite(greenLeds[i], greenStates[i]);
       digitalWrite(blueLeds[i], blueStates[i]);
     }
   }
@@ -177,7 +184,6 @@ void serialPoller() {
   while (Serial.available()) {
     if (Serial.available()) {
       colorMode = Serial.read();
-      //Serial.print(colorMode);
       incomming();
     }
   }
